@@ -1,3 +1,5 @@
+.ifndef __CONSOLE_MACROS_S__
+.def    __CONFOLE_CACROS_S__
 #
 #
 # This file contains macros definitions for working with
@@ -19,7 +21,7 @@
 # constants and variables for macroces be
 # working
 #
-    .code
+    .text
 CONSOLE_MACROS_OUTSTR_FMT_STR:
         .string "%s"
 
@@ -39,7 +41,7 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 #
 ######################################################
 .macro OUTSTR str_place:req
-    .code                
+    .text                
         pushl   \str_place
         pushl   $CONSOLE_MACROS_OUTSTR_FMT_STR
         call    printf
@@ -57,11 +59,24 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 #
 ######################################################
 .macro OUTSTRLN str_place:req
-    .code                
+    .text                
         pushl   \str_place 
         call    puts
         addl    4, %esp
 .endm
+
+#####################################################
+#
+# OUTCHAR - print one symbol
+#           reqires one argument
+#           one byte size 
+#
+####################################################
+.macro OUTCHAR symb:req
+    .text
+        
+
+
 
 #####################################################
 # INPUTSTR - read string to 'buf' parabeter
@@ -73,8 +88,9 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 #            It return zero if End of flow reached.                                                                     
 #####################################################
 .macro INPUTSTR buf:req buf_size=128
-    .code
+    .text
         movl    stdin, %eax
+        pushl   %eax
         pushl   \buf_size
         pushl   \buf
         call    fgets
@@ -82,5 +98,5 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 .endm
 
 
-
+.endif # for __CONSOLE_MACROS_H__ 
 
