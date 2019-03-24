@@ -17,6 +17,8 @@
 # x86 (i386) computer architecture.
 #
 
+.att_syntax
+
 #
 # constants and variables for macroces be
 # working
@@ -25,6 +27,12 @@
 CONSOLE_MACROS_OUTSTR_FMT_STR:
         .string "%s"
 
+#
+# Function for get eip register value
+#
+__x86.get_pc_thunk.bx:
+        movl    (%esp), %ebx
+        ret
 
 #
 # End constants and variables
@@ -45,7 +53,7 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
         pushl   \str_place
         pushl   $CONSOLE_MACROS_OUTSTR_FMT_STR
         call    printf
-        addl    8, %esp
+        addl    $8, %esp
 .endm
 
 ######################################################
@@ -62,7 +70,7 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
     .text                
         pushl   \str_place 
         call    puts
-        addl    4, %esp
+        addl    $4, %esp
 .endm
 
 #####################################################
@@ -74,8 +82,17 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 ####################################################
 .macro OUTCHAR symb:req
     .text
-        
-
+        pushl   %ebx
+        call    __x86.get_pc_thunk.bx
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        movl    stdout@GOT(%ebx), %eax
+        pushl   (%eax)
+        movzx   \symb, %eax
+        pushl   %eax
+        call    fputc
+        addl    $8, %esp
+        popl    %ebx
+.endm
 
 
 #####################################################
@@ -85,16 +102,21 @@ CONSOLE_MACROS_OUTSTR_FMT_STR:
 #
 #            buf_size must be 32 bit.
 #
-#            It return zero if End of flow reached.                                                                     
+#            It return in eax zero if End of flow reached.                                                                     
 #####################################################
 .macro INPUTSTR buf:req buf_size=128
     .text
-        movl    stdin, %eax
-        pushl   %eax
+        pushl   %ebx
+        call    __x86.get_pc_thunk.bx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
         pushl   \buf_size
         pushl   \buf
         call    fgets
-        addl    12, %esp
+        addl    $12, %esp
+        popl    %ebx
 .endm
 
 
