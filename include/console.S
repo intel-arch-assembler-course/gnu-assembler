@@ -1,5 +1,5 @@
 .ifndef __CONSOLE_MACROS_S__
-.def    __CONFOLE_CACROS_S__
+.def    __CONFOLE_MACROS_S__
 #
 #
 # This file contains macros definitions for working with
@@ -26,11 +26,17 @@
     .text
 CONSOLE_MACROS_OUTSTR_FMT_STR:
         .string "%s"
+CONSOLE_MACROS_INT_FMT_STR:
+        .string "%d"
+CONSOLE_MACROS_UNSIGNED_FMT:
+        .string "%u"
+CONSOLE_MACROS_EMPTY_STR:
+        .string ""
 
 #
 # Function for get eip register value
 #
-__x86.get_pc_thunk.bx:
+__save_eip_in_ebx:
         movl    (%esp), %ebx
         ret
 
@@ -66,9 +72,9 @@ __x86.get_pc_thunk.bx:
 # string in argument.
 #
 ######################################################
-.macro OUTSTRLN str_place:req
-    .text                
-        pushl   \str_place 
+.macro OUTSTRLN str_place=$CONSOLE_MACROS_EMPTY_STR
+    .text
+        pushl   \str_place
         call    puts
         addl    $4, %esp
 .endm
@@ -83,7 +89,7 @@ __x86.get_pc_thunk.bx:
 .macro OUTCHAR symb:req
     .text
         pushl   %ebx
-        call    __x86.get_pc_thunk.bx
+        call    __save_eip_in_ebx
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
         movl    stdout@GOT(%ebx), %eax
         pushl   (%eax)
@@ -91,6 +97,32 @@ __x86.get_pc_thunk.bx:
         pushl   %eax
         call    fputc
         addl    $8, %esp
+        popl    %ebx
+.endm
+
+##################################################
+#
+# OUTNUM - write various number types.
+#          tip= {d,u} d - signed, u-unsigned 
+#
+#################################################
+.macro OUTNUM x:req tip=d
+    .text
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+       
+        pushl  \x
+        .ifequ \tip, d
+            pushl   $CONSOLE_MACROS_INT_FMT_STR
+        .elif  \tip, u
+            pushl   $CONSOLE_MACROS_UNSIGNED_FMT_STR
+        .else
+            .err "Unknown mode"
+        .endif
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fprintf
         popl    %ebx
 .endm
 
@@ -107,7 +139,7 @@ __x86.get_pc_thunk.bx:
 .macro INPUTSTR buf:req buf_size=128
     .text
         pushl   %ebx
-        call    __x86.get_pc_thunk.bx                                                                   
+        call    __save_eip_in_ebx                                                                   
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
         
         movl    stdin@GOT(%ebx), %eax
@@ -118,6 +150,102 @@ __x86.get_pc_thunk.bx:
         addl    $12, %esp
         popl    %ebx
 .endm
+
+
+#####################################################
+#
+# INCHAR - read character from standard input
+#          
+#          it return in eax 0 if symb has been normaly
+#          read and -1 on End of file and errors
+#
+####################################################
+.macro INCHAR x:req
+    .text
+        pushl   %ebx
+        call    __save_eip_in_ebx
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fgetc
+        addl    $4, %esp
+        popl    %ebx
+        
+        cmpl   %eax, $0
+        jle    INCHAR_gen_err_exit_\@
+        movb   %al, \x
+        movl   $0,   %eax
+        jmp    INCHAR_FIN_\@
+        
+INCHAR_gen_err_exit_\@:
+       mov    $-1, %eax
+
+INCHAR_FIN_\@:
+.endm
+
+##################################################
+#
+# ININT - read signed number from stdin.
+#         read only 32 bit integer
+#
+#################################################
+.macro ININT x:req
+    .text
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_INT_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+
+#TODO check return value
+        movl    -4(%ebp), \x  
+
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+.endm
+        
+##################################################
+#
+# INWORD - read signed number from stdin.
+#         read only 32 bit integer
+#
+#################################################
+.macro INWORD x:req
+    .text
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl    %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_UNSIGNED_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+
+#TODO check return value
+        movl    -4(%ebp), \x
+        
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+.endm
+
 
 
 .endif # for __CONSOLE_MACROS_H__ 
