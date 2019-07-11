@@ -1,5 +1,5 @@
 .ifndef __CONSOLE_MACROS_S__
-.def    __CONFOLE_MACROS_S__
+.def    __CONSOLE_MACROS_S__
 #
 #
 # This file contains macros definitions for working with
@@ -43,6 +43,19 @@ __save_eip_in_ebx:
 #
 # End constants and variables
 #
+
+#**************************
+# Выход из программы (переписанный)
+#**************************
+.equ Exit, EXIT
+.equ exit, EXIT
+#**********************
+.macro EXIT x=$0
+    mov     $60, %eax               # system call 60 is exit
+    movl    \x, %edi
+    shr     $1, %edi
+    syscall 
+.endm
 
 ######################################################
 #
@@ -113,9 +126,9 @@ __save_eip_in_ebx:
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
        
         pushl  \x
-        .ifequ \tip, d
+        .ifc \tip, d
             pushl   $CONSOLE_MACROS_INT_FMT_STR
-        .elif  \tip, u
+        .elseif  \tip, u
             pushl   $CONSOLE_MACROS_UNSIGNED_FMT_STR
         .else
             .err "Unknown mode"
@@ -248,5 +261,5 @@ INCHAR_FIN_\@:
 
 
 
-.endif # for __CONSOLE_MACROS_H__ 
+.endef # for __CONSOLE_MACROS_S__ 
 
