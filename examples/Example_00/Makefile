@@ -1,6 +1,6 @@
 include ../../config.mk
 
-ASSEMBLER_FLAGS= $(ASSEMBLER_FLAGS) -I../../include
+ASM_FLAGS= $(ASSEMBLER_FLAGS) -I../../include
 
 all: a
 
@@ -9,7 +9,7 @@ a: a.o
 
 
 %.o: %.s
-	$(ASSEMBLER) $(ASSEMBLER_FLAGS) -o $@ $<
+	$(ASSEMBLER) $(ASM_FLAGS) -o $@ $<
 
 
 
