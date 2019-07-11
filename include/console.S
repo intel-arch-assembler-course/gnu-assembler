@@ -1,5 +1,5 @@
 .ifndef __CONSOLE_MACROS_S__
-.def    __CONSOLE_MACROS_S__
+.set    __CONSOLE_MACROS_S__,0
 #
 #
 # This file contains macros definitions for working with
@@ -261,5 +261,5 @@ INCHAR_FIN_\@:
 
 
 
-.endef # for __CONSOLE_MACROS_S__ 
+.endif # for __CONSOLE_MACROS_S__ 
 
