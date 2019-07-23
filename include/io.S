@@ -1,5 +1,12 @@
 .NOLIST
 
+#
+# Function for get eip register value
+#
+__save_eip_in_ebx:
+        movl    (%esp), %ebx
+        ret
+
 ;================= macros ==============
 
 ;    purge GLOBAL; ненужный макрос в macros.inc
@@ -290,17 +297,22 @@ repeat n
 endm
 endm
 
-;**************************
-; Выход из программы
-;**************************
-Exit equ exit
-EXIT equ exit
-;**********************
-exit macro x:=<0>
+#**************************
+# Выход из программы (переписанный)
+#**************************
+Exit equ EXIT
+exit equ EXIT
+#**********************
+.macro EXIT x:=<0>
     cld;           Иначе AVOST
-    push x
-    call ExitProcess
-endm
+    push    x
+
+    pushl   %ebx
+    call    __save_eip_in_ebx
+    addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+    call    _exit
+    popl    %ebx
+.endm
 
 ;**********************************************
 ; outstr macro x:VARARG
