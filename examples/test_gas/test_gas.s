@@ -1,6 +1,6 @@
 .att_syntax
 
-.include "/home/user/macroses/gnu-assembler/include/console.S"
+.include "console.S"
 
 .global _start
 

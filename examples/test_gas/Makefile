@@ -2,9 +2,9 @@ include ../../config.mk
 
 ASM_FLAGS= $(ASSEMBLER_FLAGS) -I../../include
 
-all: a
+all: test_gas
 
-a: a.o
+test_gas: test_gas.o
 	$(LINKER) $(LINKER_FLAGS) -o $@ $^ $(LIBS)
 
 
