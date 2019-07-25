@@ -40,16 +40,97 @@ __save_eip_in_ebx:
         movl    (%esp), %ebx
         ret
 
+
 #
 # End constants and variables
 #
 
-#**************************
-# Выход из программы (переписанный)
-#**************************
+# 
+# Save registers
+#
+.macro ??SAVE_REG F=$
+
+    pushl    eax
+    pushl    ecx
+    pushl    edx
+
+    .ifnb <F>
+        pushfd
+    .endif
+
+.endm
+
+
+####################### 
+#
+# Restore registers
+#
+#######################
+??RESTORE_REG macro F=$
+
+    .ifnb <F>
+        popfd
+    .endif
+
+    popl    edx
+    popl    ecx
+    popl    eax
+
+.endm
+
+########################
+# 
+# Clear console screen
+#
+########################
+.equ Cls, CLRSCR
+.equ Cls, CLRSCR
+.equ ClrScr, CLRSCR
+#
+.macro CLRSCR
+
+    ??SAVE_REG      FLAGS
+    call            ClearScreen # переделать
+    ??RESTORE_REG   FLAGS
+
+.endm
+
+##################################
+#
+#  Move to a new line n times
+#
+##################################
+.equ NewLine, NEWLINE
+.equ Newline, NEWLINE
+.equ newline, NEWLINE
+##################################
+.macro NEWLINE n=$1
+
+    pushl   %ecx
+    mov     \n, %ecx
+
+repeat_cycle:
+    .if     %ecx
+        OUTCHAR     13    
+        OUTCHAR     10
+        dec         %ecx
+        jmp         repeat_cycle
+    .endif
+
+    popl     %ecx
+
+.endm
+
+###########################
+#
+# Exit from program
+#
+###########################
+#
 .equ Exit, EXIT
 .equ exit, EXIT
-#**********************
+#
+###########################
 .macro EXIT x=$0
     mov     $60, %eax               # system call 60 is exit
     movl    \x, %edi
@@ -113,6 +194,7 @@ __save_eip_in_ebx:
         popl    %ebx
 .endm
 
+
 ##################################################
 #
 # OUTNUM - write various number types.
@@ -164,6 +246,25 @@ __save_eip_in_ebx:
         popl    %ebx
 .endm
 
+################################
+#
+# Pause and output txt
+#
+################################
+.equ Pause, PAUSE
+.equ pause, PAUSE
+
+.macro PAUSE txt
+
+    .ifnb   \txt
+        OUTSTR  txt
+    .endif
+    
+    ??SAVE_REG      FLAGS
+    call            getchar # !!!ПРОВЕРИТЬ!!!
+    ??RESTORE_REG   FLAGS 
+    NEWLINE
+.endm
 
 #####################################################
 #
