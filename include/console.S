@@ -386,6 +386,19 @@ INCHAR_FIN_\@:
         popl    %ebx
 .endm
 
+########################################
+#
+# ConsoleMode; turn off transcoding
+#
+########################################
+.data
+  ??ConsoleMode db 0
+_DATA  ends
+
+.macro ConsoleMode
+    not ??ConsoleMode # do not change EFlags
+endm
+
 
 
 .endif # for __CONSOLE_MACROS_S__ 
