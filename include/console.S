@@ -66,7 +66,7 @@ __save_eip_in_ebx:
 # Restore registers
 #
 #######################
-??RESTORE_REG macro F=$
+. macro ??RESTORE_REG F=$
 
     .ifnb <F>
         popfd
@@ -296,6 +296,32 @@ INCHAR_gen_err_exit_\@:
        mov    $-1, %eax
 
 INCHAR_FIN_\@:
+.endm
+
+#################################
+#
+# Сброс буфера ввода
+#
+#################################
+.equ Flush, FLUSH
+.equ flush, FLUSH
+#################################
+.macro FLUSH
+
+    .local buf, L
+
+    .data
+        buf db 0
+    _DATA  ends
+
+    .code
+            ??SAVE_REG      FLAGS
+    L:      invoke StdIn,offset buf,1 # one symbol
+            cmp             buf,10
+            jne             L
+            ??RESTORE_REG   FLAGS
+    _TEXT  ends
+    
 .endm
 
 ##################################################
