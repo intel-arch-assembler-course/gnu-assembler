@@ -48,16 +48,15 @@ __save_eip_in_ebx:
 # 
 # Save registers
 #
-.macro ??SAVE_REG F=$
+.macro SAVE_REG F=$
+    .text
+        pushl    eax
+        pushl    ecx
+        pushl    edx
 
-    pushl    eax
-    pushl    ecx
-    pushl    edx
-
-    .ifnb <F>
-        pushfd
-    .endif
-
+        .ifnb <F>
+            pushfd
+        .endif
 .endm
 
 
@@ -66,16 +65,15 @@ __save_eip_in_ebx:
 # Restore registers
 #
 #######################
-. macro ??RESTORE_REG F=$
+.macro RESTORE_REG F=$
+    .text
+        .ifnb <F>
+            popfd
+        .endif
 
-    .ifnb <F>
-        popfd
-    .endif
-
-    popl    edx
-    popl    ecx
-    popl    eax
-
+        popl    edx
+        popl    ecx
+        popl    eax
 .endm
 
 ########################
@@ -88,10 +86,10 @@ __save_eip_in_ebx:
 .equ ClrScr, CLRSCR
 #
 .macro CLRSCR
-
-    ??SAVE_REG      FLAGS
-    call            ClearScreen # переделать
-    ??RESTORE_REG   FLAGS
+    .text
+        SAVE_REG      Flags
+        call          ClearScreen # переделать
+        RESTORE_REG   Flags
 
 .endm
 
@@ -105,20 +103,19 @@ __save_eip_in_ebx:
 .equ newline, NEWLINE
 ##################################
 .macro NEWLINE n=$1
+    .text
+        pushl   %ecx
+        mov     \n, %ecx
 
-    pushl   %ecx
-    mov     \n, %ecx
+    repeat_cycle:
+        .if     %ecx
+            OUTCHAR     13    
+            OUTCHAR     10
+            dec         %ecx
+            jmp         repeat_cycle
+        .endif
 
-repeat_cycle:
-    .if     %ecx
-        OUTCHAR     13    
-        OUTCHAR     10
-        dec         %ecx
-        jmp         repeat_cycle
-    .endif
-
-    popl     %ecx
-
+        popl     %ecx
 .endm
 
 ###########################
@@ -132,10 +129,11 @@ repeat_cycle:
 #
 ###########################
 .macro EXIT x=$0
-    mov     $60, %eax               # system call 60 is exit
-    movl    \x, %edi
-    shr     $1, %edi
-    syscall 
+    .text
+        mov     $60, %eax               # system call 60 is exit
+        movl    \x, %edi
+        shr     $1, %edi
+        syscall 
 .endm
 
 ######################################################
@@ -255,15 +253,15 @@ repeat_cycle:
 .equ pause, PAUSE
 
 .macro PAUSE txt
-
-    .ifnb   \txt
-        OUTSTR  txt
-    .endif
+    .text
+        .ifnb   \txt
+            OUTSTR  txt
+        .endif
     
-    ??SAVE_REG      FLAGS
-    call            getchar # !!!ПРОВЕРИТЬ!!!
-    ??RESTORE_REG   FLAGS 
-    NEWLINE
+        SAVE_REG      Flags
+        call          getchar # !!!ПРОВЕРИТЬ!!!
+        RESTORE_REG   Flags
+        NEWLINE
 .endm
 
 #####################################################
@@ -307,21 +305,17 @@ INCHAR_FIN_\@:
 .equ flush, FLUSH
 #################################
 .macro FLUSH
-
     .local buf, L
 
     .data
         buf db 0
-    _DATA  ends
 
-    .code
-            ??SAVE_REG      FLAGS
-    L:      invoke StdIn,offset buf,1 # one symbol
-            cmp             buf,10
-            jne             L
-            ??RESTORE_REG   FLAGS
-    _TEXT  ends
-    
+    .text
+            SAVE_REG      Flags
+    L:      invoke        StdIn,offset buf,1 # one symbol
+            cmp           buf,10
+            jne           L
+            RESTORE_REG   Flags
 .endm
 
 ##################################################
@@ -386,20 +380,12 @@ INCHAR_FIN_\@:
         popl    %ebx
 .endm
 
-########################################
-#
-# ConsoleMode; turn off transcoding
-#
-########################################
-.data
-  ??ConsoleMode db 0
-_DATA  ends
-
-.macro ConsoleMode
-    not ??ConsoleMode # do not change EFlags
-endm
-
-
+###########################################
+.equ randomize, RANDOMIZE
+.equ Randomize, RANDOMIZE
+###########################################
+.macro RANDOMIZE
+    call    randomize
+.endm
 
 .endif # for __CONSOLE_MACROS_S__ 
-
