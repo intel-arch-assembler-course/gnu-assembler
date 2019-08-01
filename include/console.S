@@ -192,6 +192,26 @@ __save_eip_in_ebx:
         popl    %ebx
 .endm
 
+####################################
+#   READKEY txt=$ # al:=ord(char)
+####################################
+.equ ReadKey, READKEY
+.equ readkey, READKEY
+####################################
+.macro READKEY txt=$
+    .text
+        .ifnb \txt
+            OUTSTR  txt
+        .endif
+        
+        pushl   ecx
+        pushl   edx
+        pushfd
+        call    getc# al:=ord(char)
+        popfd
+        popl    edx
+        popl    ecx
+.endm
 
 ##################################################
 #
@@ -385,7 +405,7 @@ INCHAR_FIN_\@:
 .equ Randomize, RANDOMIZE
 ###########################################
 .macro RANDOMIZE
-    call    randomize
+    call    srand
 .endm
 
 .endif # for __CONSOLE_MACROS_S__ 
