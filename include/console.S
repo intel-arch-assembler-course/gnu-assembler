@@ -213,6 +213,18 @@ __save_eip_in_ebx:
         popl    ecx
 .endm
 
+#################################################
+# @READKEY txt=$ # al=ord(char)
+#################################################
+.equ @readkey, @READKEY
+.equ @ReadKey, @READKEY
+#################################################
+.macro READKEY txt=$
+    .text
+        READKEY     txt
+        .exitm      %al
+.endm
+
 ##################################################
 #
 # OUTNUM - write various number types.
