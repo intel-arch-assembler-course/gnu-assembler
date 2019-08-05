@@ -420,4 +420,86 @@ INCHAR_FIN_\@:
     call    srand
 .endm
 
+###########################################
+# CF output (for OUTFLAGS)
+###########################################
+.equ OutCF, OUTCF
+.equ outCF, OUTCF
+.equ outcf, OUTCF
+###########################################
+.macro OUTCF
+    .local Out_1_\@
+
+    .text
+        jnc         Out_1_\@
+        OUTWORD     $0
+Out_1_\@:
+        OUTWORD     $1
+.endm
+
+###########################################
+# OF output (for OUTFLAGS)
+###########################################
+.equ OutOF, OUTOF
+.equ outOF, OUTOF
+.equ outof, OUTOF
+###########################################
+.macro OUTOF
+    .local Out_1_\@
+
+    .text
+        jo          Out_1_\@
+        OUTWORD     $0
+Out_1_\@:
+        OUTWORD     $1
+.endm
+
+###########################################
+# ZF output (for OUTFLAGS)
+###########################################
+.equ OutZF, OUTZF
+.equ outZF, OUTZF
+.equ outzf, OUTZF
+###########################################
+.macro OUTZF
+    .local Out_1_\@
+
+    .text
+        jz          Out_1_\@
+        OUTWORD     $0
+Out_1_\@:
+        OUTWORD     $1
+.endm
+
+###########################################
+# SF output (for OUTFLAGS)
+###########################################
+.equ OutSF, OUTSF
+.equ outSF, OUTSF
+.equ outsf, OUTSF
+###########################################
+.macro OUTSF
+    .local Out_1_\@
+
+    .text
+        js          Out_1_\@
+        OUTWORD     $0
+Out_1_\@:
+        OUTWORD     $1
+.endm
+
+###########################################
+# CF, OF, ZF, SF output
+###########################################
+.equ outflags, OUTFLAGS
+.equ OutFlags, OUTFLAGS
+###########################################
+.macro OUTFLAGS
+    .text
+        OUTCF
+        OUTOF
+        OUTZF
+        OUTSF
+.endm
+
 .endif # for __CONSOLE_MACROS_S__ 
