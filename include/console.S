@@ -54,7 +54,7 @@ __save_eip_in_ebx:
         pushl    ecx
         pushl    edx
 
-        .ifnb <F>
+        .ifnb \F
             pushfd
         .endif
 .endm
@@ -67,7 +67,7 @@ __save_eip_in_ebx:
 #######################
 .macro RESTORE_REG F=$
     .text
-        .ifnb <F>
+        .ifnb \F
             popfd
         .endif
 
@@ -304,8 +304,12 @@ __save_eip_in_ebx:
 #          read and -1 on End of file and errors
 #
 ####################################################
-.macro INCHAR x:req
+.macro INCHAR x:req, prompt: vararg
     .text
+        .ifnb \prompt
+            OUTSTR  prompt
+        .endif
+
         pushl   %ebx
         call    __save_eip_in_ebx
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
@@ -326,6 +330,17 @@ INCHAR_gen_err_exit_\@:
        mov    $-1, %eax
 
 INCHAR_FIN_\@:
+.endm
+
+####################################################
+.equ @inchar, @INCHAR
+.equ @InChar, @INCHAR
+.equ @Inchar, @INCHAR
+####################################################
+.macro @INCHAR prompt: vararg
+    .text
+        INCHAR      %al, \prompt
+        .exitm      %al
 .endm
 
 #################################
