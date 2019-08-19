@@ -421,6 +421,18 @@ INCHAR_FIN_\@:
 .endm
 
 ###########################################
+.equ @random, @RANDOM
+.equ @Random, @RANDOM
+###########################################
+.macro @RANDOM n=$0FFFFFFFFh
+    .text
+        SAVE_REG        Flags
+        call            rand
+        RESTORE_REG     Flags
+        .exitm          %eax
+.endm
+
+###########################################
 # CF output (for OUTFLAGS)
 ###########################################
 .equ OutCF, OUTCF
