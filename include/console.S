@@ -213,18 +213,6 @@ __save_eip_in_ebx:
         popl    ecx
 .endm
 
-#################################################
-# @READKEY txt=$ # al=ord(char)
-#################################################
-.equ @readkey, @READKEY
-.equ @ReadKey, @READKEY
-#################################################
-.macro READKEY txt=$
-    .text
-        READKEY     txt
-        .exitm      %al
-.endm
-
 ##################################################
 #
 # OUTNUM - write various number types.
@@ -332,17 +320,6 @@ INCHAR_gen_err_exit_\@:
 INCHAR_FIN_\@:
 .endm
 
-####################################################
-.equ @inchar, @INCHAR
-.equ @InChar, @INCHAR
-.equ @Inchar, @INCHAR
-####################################################
-.macro @INCHAR prompt: vararg
-    .text
-        INCHAR      %al, \prompt
-        .exitm      %al
-.endm
-
 #################################
 #
 # Сброс буфера ввода
@@ -425,26 +402,6 @@ INCHAR_FIN_\@:
         movl    %ebp, %esp
         popl    %ebp
         popl    %ebx
-.endm
-
-###########################################
-.equ randomize, RANDOMIZE
-.equ Randomize, RANDOMIZE
-###########################################
-.macro RANDOMIZE
-    call    srand
-.endm
-
-###########################################
-.equ @random, @RANDOM
-.equ @Random, @RANDOM
-###########################################
-.macro @RANDOM n=$0FFFFFFFFh
-    .text
-        SAVE_REG        Flags
-        call            rand
-        RESTORE_REG     Flags
-        .exitm          %eax
 .endm
 
 ###########################################
