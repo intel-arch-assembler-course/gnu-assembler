@@ -76,6 +76,24 @@ __save_eip_in_ebx:
         popl    eax
 .endm
 
+###########################
+#
+# Exit from program
+#
+###########################
+#
+.equ Exit, EXIT
+.equ exit, EXIT
+#
+###########################
+.macro EXIT x=$0
+    .text
+        mov     $1, %eax               # system call 1 is exit
+        movl    \x, %edi
+        shr     $1, %edi
+        int     $0x80
+.endm
+
 ########################
 # 
 # Clear console screen
@@ -116,24 +134,6 @@ __save_eip_in_ebx:
         .endif
 
         popl     %ecx
-.endm
-
-###########################
-#
-# Exit from program
-#
-###########################
-#
-.equ Exit, EXIT
-.equ exit, EXIT
-#
-###########################
-.macro EXIT x=$0
-    .text
-        mov     $60, %eax               # system call 60 is exit
-        movl    \x, %edi
-        shr     $1, %edi
-        syscall 
 .endm
 
 ######################################################
