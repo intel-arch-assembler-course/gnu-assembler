@@ -1,10 +1,10 @@
-.att_syntax
+.include    "console.S"
 
-.include "console.S"
+.global      _start
 
-.global _start
+_start: 
+    OUTSTR $str # macros OUTSTR passed the test
+    EXIT # macros EXIT passed the test
 
-.text
-_start:
-    mov         $50, %al
-    EXIT
+str:
+        .ascii "Hello, world!\12\0"
