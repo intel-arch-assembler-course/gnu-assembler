@@ -1,6 +1,6 @@
 include ../../config.mk
 
-ASM_FLAGS= $(ASSEMBLER_FLAGS) -I../../include
+ASM_FLAGS= -g $(ASSEMBLER_FLAGS) -I../../include
 
 all: test_gas
 

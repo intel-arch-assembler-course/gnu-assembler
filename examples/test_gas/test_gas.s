@@ -1,10 +1,16 @@
-.include    "console.S"
+.intel_syntax noprefix
 
-.global      _start
+.include "console.S"
 
-_start: 
-    OUTSTR $str # macros OUTSTR passed the test
-    EXIT # macros EXIT passed the test
+.global _start
 
-str:
-        .ascii "Hello, world!\12\0"
+    .text
+    .global PRINTING_TEXT
+PRINTING_TEXT:
+    .string "la la\n"
+
+.text
+_start:
+    lea eax, PRINTING_TEXT
+    OUTSTR   "offset PRINTING_TEXT"
+    EXIT_PRG eax
