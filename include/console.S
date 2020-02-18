@@ -32,6 +32,8 @@ CONSOLE_MACROS_UNSIGNED_FMT:
         .string "%u"
 CONSOLE_MACROS_EMPTY_STR:
         .string ""
+CLRSCR_REGEX:
+		.string "\e[1;1H\e[2J"
 
 #
 # Function for get eip register value
@@ -94,48 +96,6 @@ __save_eip_in_ebx:
         int     $0x80
 .endm
 
-########################
-# 
-# Clear console screen
-#
-########################
-.equ Cls, CLRSCR
-.equ Cls, CLRSCR
-.equ ClrScr, CLRSCR
-#
-.macro CLRSCR
-    .text
-        SAVE_REG      Flags
-        call          ClearScreen # переделать
-        RESTORE_REG   Flags
-
-.endm
-
-##################################
-#
-#  Move to a new line n times
-#
-##################################
-.equ NewLine, NEWLINE
-.equ Newline, NEWLINE
-.equ newline, NEWLINE
-##################################
-.macro NEWLINE n=$1
-    .text
-        pushl   %ecx
-        mov     \n, %ecx
-
-    repeat_cycle:
-        .if     %ecx
-            OUTCHAR     13    
-            OUTCHAR     10
-            dec         %ecx
-            jmp         repeat_cycle
-        .endif
-
-        popl     %ecx
-.endm
-
 ######################################################
 #
 # OUTSTR -
@@ -169,6 +129,52 @@ __save_eip_in_ebx:
         pushl   \str_place
         call    puts
         addl    $4, %esp
+.endm
+
+##################################
+#
+#  Move to a new line n times
+#
+##################################
+.equ NewLine, NEWLINE
+.equ Newline, NEWLINE
+.equ newline, NEWLINE
+##################################
+.macro NEWLINE n=$1
+    .text
+        pushl   %ecx
+        mov     \n, %ecx
+
+Print_newline_cycle_\@:
+        OUTSTR		$CONSOLE_MACROS_EMPTY_STR
+		sub 		$1, %ecx
+		jnz 	Print_newline_cycle_\@
+
+        popl     %ecx
+.endm
+
+#####################################################
+# INPUTSTR - read string to 'buf' parabeter
+#            where it can't overheade 'buf_size'
+#            bytes.
+#
+#            buf_size must be 32 bit.
+#
+#            It return in eax zero if End of flow reached.                                                                     
+#####################################################
+.macro INPUTSTR buf:req buf_size=128
+    .text
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        pushl   \buf_size
+        pushl   \buf
+        call    fgets
+        addl    $12, %esp
+        popl    %ebx
 .endm
 
 #####################################################
@@ -215,7 +221,7 @@ __save_eip_in_ebx:
 
 ##################################################
 #
-# OUTNUM - write various number types.
+# OUTNUM - writes various number types.
 #          tip= {d,u} d - signed, u-unsigned 
 #
 #################################################
@@ -226,6 +232,7 @@ __save_eip_in_ebx:
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
        
         pushl  \x
+
         .ifc \tip, d
             pushl   $CONSOLE_MACROS_INT_FMT_STR
         .elseif  \tip, u
@@ -233,35 +240,67 @@ __save_eip_in_ebx:
         .else
             .err "Unknown mode"
         .endif
-        movl    stdin@GOT(%ebx), %eax
+		
+        movl    stdout@GOT(%ebx), %eax
         pushl   (%eax)
-        call    fprintf
+        call    fprintf@PLT
         popl    %ebx
 .endm
 
+#######################################
+#
+# OUTINT - writes a signed decimal number.
+#
+#######################################
+.equ Outint, OUTINT
+.equ OutInt, OUTINT
+.equ outint, OUTINT
+.equ Outi, OUTINT
+.equ OutI, OUTINT
+.equ outi, OUTINT
+.equ Outsigned, OUTINT
+.equ OutSigned, OUTINT
+.equ outsigned, OUTINT
+#######################################
+.macro OUTINT x:req
+	.text
+		OUTNUM x, d
+.endm
+#######################################
 
-#####################################################
-# INPUTSTR - read string to 'buf' parabeter
-#            where it can't overheade 'buf_size'
-#            bytes.
+#############################################
 #
-#            buf_size must be 32 bit.
+# OUTWORD - writes an unsigned deimal number.
 #
-#            It return in eax zero if End of flow reached.                                                                     
-#####################################################
-.macro INPUTSTR buf:req buf_size=128
+#############################################
+.equ Outword, OUTWORD
+.equ OutWord, OUTWORD
+.equ outword, OUTWORD
+.equ Outunsigned, OUTWORD
+.equ OutUnsigned, OUTWORD
+.equ outunsigned, OUTWORD
+.equ Outu, OUTWORD
+.equ OutU, OUTWORD
+.equ outu, OUTWORD
+#############################################
+.macro OUTWORD
+	.text
+		OUTNUM x, u
+.endm
+#############################################
+
+########################
+# 
+# Clear console screen
+#
+########################
+.equ Cls, CLRSCR
+.equ Cls, CLRSCR
+.equ ClrScr, CLRSCR
+#
+.macro CLRSCR
     .text
-        pushl   %ebx
-        call    __save_eip_in_ebx                                                                   
-        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
-        
-        movl    stdin@GOT(%ebx), %eax
-        pushl   (%eax)
-        pushl   \buf_size
-        pushl   \buf
-        call    fgets
-        addl    $12, %esp
-        popl    %ebx
+		OUTSTR 		$CLRSCR_REGEX
 .endm
 
 ################################
@@ -275,12 +314,10 @@ __save_eip_in_ebx:
 .macro PAUSE txt
     .text
         .ifnb   \txt
-            OUTSTR  txt
+            OUTSTR 		txt
         .endif
     
-        SAVE_REG      Flags
-        call          getchar # !!!ПРОВЕРИТЬ!!!
-        RESTORE_REG   Flags
+        call		getchar # !!!ПРОВЕРИТЬ!!!
         NEWLINE
 .endm
 
@@ -329,17 +366,9 @@ INCHAR_FIN_\@:
 .equ flush, FLUSH
 #################################
 .macro FLUSH
-    .local buf, L
-
-    .data
-        buf db 0
-
     .text
-            SAVE_REG      Flags
-    L:      invoke        StdIn,offset buf,1 # one symbol
-            cmp           buf,10
-            jne           L
-            RESTORE_REG   Flags
+		# НАПИСАТЬ ЗАПИСЬ В СТЕК STDIN
+		call fflush
 .endm
 
 ##################################################
