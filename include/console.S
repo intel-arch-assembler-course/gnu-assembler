@@ -34,6 +34,8 @@ CONSOLE_MACROS_EMPTY_STR:
         .string ""
 CLRSCR_REGEX:
 		.string "\e[1;1H\e[2J"
+#CLRSCR_WORD:
+#		.word 27,"[H"
 
 #
 # Function for get eip register value
@@ -227,10 +229,10 @@ Print_newline_cycle_\@:
 #################################################
 .macro OUTNUM x:req tip=d
     .text
-        pushl   %ebx
-        call    __save_eip_in_ebx                                                                   
-        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
-       
+        #pushl   %ebx
+        #call    __save_eip_in_ebx                                                                   
+        #addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+		
         pushl  \x
 
         .ifc \tip, d
@@ -241,10 +243,12 @@ Print_newline_cycle_\@:
             .err "Unknown mode"
         .endif
 		
-        movl    stdout@GOT(%ebx), %eax
-        pushl   (%eax)
-        call    fprintf@PLT
-        popl    %ebx
+        #movl    stdout@GOT(%ebx), %eax
+        #pushl   (%eax)
+        #call    fprintf@PLT
+        #popl    %ebx
+
+		call	printf
 .endm
 
 #######################################
@@ -300,6 +304,12 @@ Print_newline_cycle_\@:
 #
 .macro CLRSCR
     .text
+		#movl	$4, %eax
+		#movl	$1, %ebx
+		#movl	$ClearTerm, %ecx
+		#movl 	$CLEARLEN, %edx
+		#movb	$0, %ah
+		#int 	$0x80
 		OUTSTR 		$CLRSCR_REGEX
 .endm
 
