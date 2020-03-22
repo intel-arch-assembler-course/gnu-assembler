@@ -2,9 +2,11 @@
 
 .global      _start
 
-_start: 
-    OUTSTR $str # macros OUTSTR passed the test
-    EXIT # macros EXIT passed the test
+_start:
 
-str:
-        .ascii "Hello, world!\12\0"
+	OUTNUM	num
+
+	EXIT 			 # passed the test
+
+num:
+	.word 1
