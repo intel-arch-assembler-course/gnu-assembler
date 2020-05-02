@@ -33,7 +33,7 @@ CONSOLE_MACROS_UNSIGNED_FMT:
 CONSOLE_MACROS_EMPTY_STR:
         .string ""
 CLRSCR_REGEX:
-		.string "\e[1;1H\e[2J"
+		.byte 27,219,72,27,219,74
 #CLRSCR_WORD:
 #		.word 27,"[H"
 
@@ -85,17 +85,9 @@ __save_eip_in_ebx:
 # Exit from program
 #
 ###########################
-#
-.equ Exit, EXIT
-.equ exit, EXIT
-#
-###########################
-.macro EXIT x=$0
+.macro EXIT
     .text
-        mov     $1, %eax               # system call 1 is exit
-        movl    \x, %edi
-        shr     $1, %edi
-        int     $0x80
+		call 	 exit
 .endm
 
 ######################################################
@@ -145,12 +137,14 @@ __save_eip_in_ebx:
 .macro NEWLINE n=$1
     .text
         pushl   %ecx
-        mov     \n, %ecx
+        movl    \n, %ecx
 
-Print_newline_cycle_\@:
-        OUTSTR		$CONSOLE_MACROS_EMPTY_STR
-		sub 		$1, %ecx
-		jnz 	Print_newline_cycle_\@
+Newline_cycle_\@:
+		pushl		%ecx
+        OUTSTRLN	$CONSOLE_MACROS_EMPTY_STR
+		popl		%ecx
+		dec			%ecx
+		jnz 		Newline_cycle_\@
 
         popl     %ecx
 .endm
