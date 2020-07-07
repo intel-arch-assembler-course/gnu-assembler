@@ -318,7 +318,7 @@ Newline_cycle_\@:
 .macro PAUSE txt
     .text
         .ifnb   \txt
-            OUTSTR 		txt
+            OUTSTR 		\txt
         .endif
     
         call		getchar # !!!ПРОВЕРИТЬ!!!
