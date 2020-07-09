@@ -312,9 +312,6 @@ Newline_cycle_\@:
 # Pause and output txt
 #
 ################################
-.equ Pause, PAUSE
-.equ pause, PAUSE
-
 .macro PAUSE txt
     .text
         .ifnb   \txt
@@ -371,8 +368,14 @@ INCHAR_FIN_\@:
 #################################
 .macro FLUSH
     .text
-		# НАПИСАТЬ ЗАПИСЬ В СТЕК STDIN
-		call fflush
+	    pushl       %ebx
+        call        __save_eip_in_ebx
+        addl        $_GLOBAL_OFFSET_TABLE_, %ebx
+        movl        stdin@GOT(%ebx), %eax
+
+        pushl       (%eax)
+		call        fflush
+        popl        %ebx
 .endm
 
 ##################################################
