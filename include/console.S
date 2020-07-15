@@ -32,6 +32,8 @@ CONSOLE_MACROS_UNSIGNED_FMT:
         .string "%u"
 CONSOLE_MACROS_EMPTY_STR:
         .string ""
+CONSOLE_MACROS_CLS_STR:
+        .string "cls"
 CLRSCR_REGEX:
 		.byte 27,219,72,27,219,74
 #CLRSCR_WORD:
@@ -298,13 +300,9 @@ Newline_cycle_\@:
 #
 .macro CLRSCR
     .text
-		#movl	$4, %eax
-		#movl	$1, %ebx
-		#movl	$ClearTerm, %ecx
-		#movl 	$CLEARLEN, %edx
-		#movb	$0, %ah
-		#int 	$0x80
-		OUTSTR 		$CLRSCR_REGEX
+        pushl       $CONSOLE_MACROS_CLS_STR
+        call        system
+        addl        $4, %esp
 .endm
 
 ################################
