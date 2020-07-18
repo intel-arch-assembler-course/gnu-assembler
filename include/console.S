@@ -32,8 +32,8 @@ CONSOLE_MACROS_UNSIGNED_FMT:
         .string "%u"
 CONSOLE_MACROS_EMPTY_STR:
         .string ""
-CONSOLE_MACROS_CLS_STR:
-        .string "cls"
+CONSOLE_MACROS_CLEAR_STR:
+        .string "clear"
 CLRSCR_REGEX:
 		.byte 27,219,72,27,219,74
 #CLRSCR_WORD:
@@ -162,6 +162,8 @@ Newline_cycle_\@:
 #####################################################
 .macro INPUTSTR buf:req buf_size=128
     .text
+        pushl   %eax
+
         pushl   %ebx
         call    __save_eip_in_ebx                                                                   
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
@@ -173,6 +175,8 @@ Newline_cycle_\@:
         call    fgets
         addl    $12, %esp
         popl    %ebx
+
+        popl    %eax
 .endm
 
 #####################################################
@@ -225,11 +229,12 @@ Newline_cycle_\@:
 #################################################
 .macro OUTNUM x:req tip=d
     .text
-        #pushl   %ebx
-        #call    __save_eip_in_ebx                                                                   
-        #addl    $_GLOBAL_OFFSET_TABLE_, %ebx
-		
-        pushl  \x
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+	    
+
+        pushl   \x
 
         .ifc \tip, d
             pushl   $CONSOLE_MACROS_INT_FMT_STR
@@ -239,12 +244,11 @@ Newline_cycle_\@:
             .err "Unknown mode"
         .endif
 		
-        #movl    stdout@GOT(%ebx), %eax
-        #pushl   (%eax)
-        #call    fprintf@PLT
-        #popl    %ebx
+        movl    stdout@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fprintf@PLT
+        popl    %ebx
 
-		call	printf
 .endm
 
 #######################################
@@ -300,7 +304,7 @@ Newline_cycle_\@:
 #
 .macro CLRSCR
     .text
-        pushl       $CONSOLE_MACROS_CLS_STR
+        pushl       $CONSOLE_MACROS_CLEAR_STR
         call        system
         addl        $4, %esp
 .endm
