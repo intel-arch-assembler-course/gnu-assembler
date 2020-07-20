@@ -3,12 +3,12 @@
 .global      _start
 
 _start:    
-    OUTCHAR     $'a'
+    #OUTCHAR     $'a' # does not work because of "movzx %eax"
     
-    movb        $100, %al
+    movb        $'b', %al
     OUTCHAR     %al
     
-    OUTCHAR     $c
+    #OUTCHAR     $c # does not work because of "movzx %eax"
     
 	EXIT 			 		
 
