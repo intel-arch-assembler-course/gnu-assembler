@@ -188,16 +188,18 @@ Newline_cycle_\@:
 ####################################################
 .macro OUTCHAR symb:req
     .text
-        pushl   %ebx
-        call    __save_eip_in_ebx
-        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
-        movl    stdout@GOT(%ebx), %eax
-        pushl   (%eax)
+        #pushl   %ebx
+        #call    __save_eip_in_ebx
+        #addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        #movl    stdout@GOT(%ebx), %eax
+        #pushl   (%eax)
         movzx   \symb, %eax
         pushl   %eax
-        call    fputc
-        addl    $8, %esp
-        popl    %ebx
+        #call    fputc
+        #addl    $8, %esp
+        #popl    %ebx
+        call    putchar
+        addl    $4, %esp
 .endm
 
 ####################################
