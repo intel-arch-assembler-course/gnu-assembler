@@ -103,11 +103,19 @@ __save_eip_in_ebx:
 #
 ######################################################
 .macro OUTSTR str_place:req
-    .text                
+    .text
+        pushl   %ebx
+        pushl   %ecx
+        pushl   %edx
+
         pushl   \str_place
         pushl   $CONSOLE_MACROS_OUTSTR_FMT_STR
         call    printf
         addl    $8, %esp
+
+        popl    %edx
+        popl    %ecx
+        popl    %ebx
 .endm
 
 ######################################################
@@ -337,8 +345,11 @@ Newline_cycle_\@:
 .macro INCHAR x:req, prompt: vararg
     .text
         .ifnb \prompt
-            OUTSTR  prompt
+            OUTSTR  \prompt
         .endif
+        
+        pushl   %ecx
+        pushl   %edx
 
         pushl   %ebx
         call    __save_eip_in_ebx
@@ -350,7 +361,10 @@ Newline_cycle_\@:
         addl    $4, %esp
         popl    %ebx
         
-        cmpl   %eax, $0
+        popl    %edx
+        popl    %ecx
+
+        cmpl   $0, %eax
         jle    INCHAR_gen_err_exit_\@
         movb   %al, \x
         movl   $0,   %eax
