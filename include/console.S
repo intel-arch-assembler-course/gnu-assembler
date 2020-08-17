@@ -398,12 +398,117 @@ INCHAR_FIN_\@:
 
 ##################################################
 #
-# ININT - read signed number from stdin.
+# ININT8 - read signed number from stdin.
+#         read only 8 bit integer
+#
+#################################################
+.macro ININT8 x:req
+    .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_INT_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+        
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    ININT8_gen_err_exit_\@
+        movb    -7(%ebp), \x
+        movl   $0,   %eax
+        jmp    ININT8_FIN_\@
+        
+ININT8_gen_err_exit_\@:
+       mov    $-1, %eax
+
+ININT8_FIN_\@:
+          
+.endm
+
+##################################################
+#
+# ININT16 - read signed number from stdin.
+#         read only 16 bit integer
+#
+#################################################
+.macro ININT16 x:req
+    .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_INT_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+        
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    ININT16_gen_err_exit_\@
+        movw    -6(%ebp), \x
+        movl   $0,   %eax
+        jmp    ININT16_FIN_\@
+        
+ININT16_gen_err_exit_\@:
+       mov    $-1, %eax
+
+ININT16_FIN_\@:
+
+.endm
+
+##################################################
+#
+# ININT32 - read signed number from stdin.
 #         read only 32 bit integer
 #
 #################################################
-.macro ININT x:req
+.macro ININT32 x:req
     .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
         pushl   %ebx
         call    __save_eip_in_ebx                                                                   
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
@@ -419,27 +524,147 @@ INCHAR_FIN_\@:
         pushl   (%eax)
         call    fscanf
 
-#TODO check return value
-        movl    -4(%ebp), \x  
-
         movl    %ebp, %esp
         popl    %ebp
         popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    ININT32_gen_err_exit_\@
+        movl    -4(%ebp), \x
+        movl   $0,   %eax
+        jmp    ININT32_FIN_\@
+        
+ININT32_gen_err_exit_\@:
+       mov    $-1, %eax
+
+ININT32_FIN_\@:
+          
 .endm
         
+
 ##################################################
 #
-# INWORD - read signed number from stdin.
-#         read only 32 bit integer
+# INWORD8 - read unsigned number from stdin.
+#           read only 8 bit integer
 #
 #################################################
-.macro INWORD x:req
+.macro INWORD8 x:req
     .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
         pushl   %ebx
         call    __save_eip_in_ebx                                                                   
         addl    $_GLOBAL_OFFSET_TABLE_, %ebx
         
-        pushl    %ebp
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_UNSIGNED_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+        
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    INWORD8_gen_err_exit_\@
+        movb    -7(%ebp), \x
+        movl   $0,   %eax
+        jmp    INWORD8_FIN_\@
+        
+INWORD8_gen_err_exit_\@:
+       mov    $-1, %eax
+
+INWORD8_FIN_\@:
+          
+.endm
+
+##################################################
+#
+# INWORD16 - read unsigned number from stdin.
+#            read only 16 bit integer
+#
+#################################################
+.macro INWORD16 x:req
+    .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl   %ebp
+        movl    %esp, %ebp
+        subl    $4,   %esp
+ 
+        leal    -4(%ebp), %eax
+        pushl   %eax
+        pushl   $CONSOLE_MACROS_UNSIGNED_FMT_STR
+        movl    stdin@GOT(%ebx), %eax
+        pushl   (%eax)
+        call    fscanf
+        
+        movl    %ebp, %esp
+        popl    %ebp
+        popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    INWORD16_gen_err_exit_\@
+        movw    -6(%ebp), \x
+        movl   $0,   %eax
+        jmp    INWORD16_FIN_\@
+        
+INWORD16_gen_err_exit_\@:
+       mov    $-1, %eax
+
+INWORD16_FIN_\@:
+
+.endm
+
+##################################################
+#
+# INWORD32 - read unsigned number from stdin.
+#            read only 32 bit integer
+#
+#################################################
+.macro INWORD32 x:req
+    .text
+
+        # registers saving
+        pushl   %ecx
+        pushl   %edx
+
+        pushl   %ebx
+        call    __save_eip_in_ebx                                                                   
+        addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+        
+        pushl   %ebp
         movl    %esp, %ebp
         subl    $4,   %esp
  
@@ -450,12 +675,26 @@ INCHAR_FIN_\@:
         pushl   (%eax)
         call    fscanf
 
-#TODO check return value
-        movl    -4(%ebp), \x
-        
         movl    %ebp, %esp
         popl    %ebp
         popl    %ebx
+
+        # registers restoring
+        popl    %edx
+        popl    %ecx
+
+        # return value checking
+        cmpl   $0, %eax
+        jle    INWORD32_gen_err_exit_\@
+        movl    -4(%ebp), \x
+        movl   $0,   %eax
+        jmp    INWORD32_FIN_\@
+        
+INWORD32_gen_err_exit_\@:
+       mov    $-1, %eax
+
+INWORD32_FIN_\@:
+          
 .endm
 
 ###########################################
